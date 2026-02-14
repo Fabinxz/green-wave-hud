@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚦 GREEN WAVE HUD
+### Cyberpunk Traffic Light Predictor for Cyclists
 
-## Getting Started
+![Project Banner](public/banner-placeholder.png)
+> *Note: Place a screenshot of your dashboard here named `banner-placeholder.png` in the `public` folder.*
 
-First, run the development server:
+---
+
+## ⚡ Overview
+**Green Wave HUD** is a high-performance, real-time cycling assistant web application. It uses a predictive algorithm to synchronize with traffic light cycles, telling cyclists exactly when to launch to hit the "Green Wave" — a continuous flow of green lights.
+
+Built with a **Cyberpunk / Sci-Fi aesthetic**, the interface is designed for immediate readability at high speeds, using high-contrast colors, strict monospaced typography, and neon visual cues.
+
+---
+
+## 🚀 Key Features
+
+### 🟢 Real-Time Prediction Engine
+-   **Precision Algorithms**: Calculates the exact phase of the traffic light cycle based on user customization.
+-   **Launch/Hold Decision**: Instantly advises the cyclist to `LAUNCH`, `HOLD`, or proceed with `CAUTION`.
+-   **Countdown Timer**: Millisecond-accurate countdown to the next green phase.
+
+### ⚙️ Engine Room (Customization)
+-   **Full Cycle Control**: Adjust descent time, green light duration, and full cycle length.
+-   **Sync Protocol**: One-tap synchronization with the traffic light's start time.
+-   **Persistence**: Settings are saved locally on the device (LocalStorage) for instant startup on the next ride.
+
+### 🎨 AAA Visual Design
+-   **Cyberpunk Aesthetic**: Pure black background (`#000`), Neon Cyan/Red/Green palette.
+-   **Responsive HUD**: Optimized for mobile viewports (pockets/handlebars) but fully functional on desktop.
+-   **Visual Feedback**: Interactive elements with haptic-style visual responses (glows, scale animations).
+
+---
+
+## 🛠️ Tech Stack
+
+-   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+-   **Language**: TypeScript
+-   **Styling**: Tailwind CSS v4 + CSS Variables
+-   **State Management**: Zustand (w/ Persistence Middleware)
+-   **Animation**: Framer Motion
+-   **Deployment**: Vercel
+
+---
+
+## 📱 Screenshots
+
+| Cockpit View | Settings Panel | Mobile View |
+|:---:|:---:|:---:|
+| ![Cockpit](public/screen-cockpit.png) | ![Settings](public/screen-settings.png) | ![Mobile](public/screen-mobile.png) |
+
+> *To update screenshots: Save images to `public/` folder with these names.*
+
+---
+
+## 🏁 Getting Started
+
+### Prerequisites
+-   Node.js 18+
+-   npm / yarn / pnpm
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/Fabinxz/green-wave-hud.git
+
+# Navigate to project
+cd green-wave-hud
+
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the HUD.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<center>
+  <sub>Built with ⚡ speed and ☕ caffeine by Fabinxz</sub>
+</center>
