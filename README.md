@@ -1,8 +1,8 @@
 # 🚦 GREEN WAVE HUD
 ### Cyberpunk Traffic Light Predictor for Cyclists
 
-![Project Banner](public/banner-placeholder.png)
-> *Note: Place a screenshot of your dashboard here named `banner-placeholder.png` in the `public` folder.*
+## ![Project Banner](public/banner-placeholder.png)
+## > *Note: Place a screenshot of your dashboard here named `banner-placeholder.png` in the `public` folder.*
 
 ---
 
@@ -45,11 +45,11 @@ Built with a **Cyberpunk / Sci-Fi aesthetic**, the interface is designed for imm
 
 ## 📱 Screenshots
 
-| Cockpit View | Settings Panel | Mobile View |
-|:---:|:---:|:---:|
-| ![Cockpit](public/screen-cockpit.png) | ![Settings](public/screen-settings.png) | ![Mobile](public/screen-mobile.png) |
+##| Cockpit View | Settings Panel | Mobile View |
+##|:---:|:---:|:---:|
+##| ![Cockpit](public/screen-cockpit.png) | ![Settings](public/screen-settings.png) | ![Mobile](public/screen-mobile.png) |
 
-> *To update screenshots: Save images to `public/` folder with these names.*
+##> *To update screenshots: Save images to `public/` folder with these names.*
 
 ---
 
