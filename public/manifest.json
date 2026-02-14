@@ -1,0 +1,21 @@
+{
+  "name": "Green Wave HUD",
+  "short_name": "GreenWave",
+  "description": "Precision traffic light predictor for cyclists",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00FFFF",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

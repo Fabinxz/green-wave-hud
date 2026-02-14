@@ -1,65 +1,173 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { useStore } from '@/lib/store';
+import { getCurrentLightState, calculateDecision, LightState, DecisionResult } from '@/lib/trafficLogic';
+import { APP_CONFIG } from '@/lib/config';
+import TrafficLight from '@/components/TrafficLight';
+import LaunchDecision from '@/components/LaunchDecision';
+import CountdownTimer from '@/components/CountdownTimer';
+import GlassPanel from '@/components/GlassPanel';
 
 export default function Home() {
+  const {
+    descentTime,
+    cycleDuration,
+    greenDuration,
+    yellowDuration,
+    syncTimestamp
+  } = useStore();
+
+  const [currentLight, setCurrentLight] = useState<LightState>('RED');
+  const [decision, setDecision] = useState<DecisionResult>({
+    decision: 'HOLD',
+    timeUntilGreen: 0,
+    arrivalPhase: 0
+  });
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const interval = setInterval(() => {
+      // 1. Get current light state
+      const lightState = getCurrentLightState(
+        syncTimestamp,
+        cycleDuration,
+        greenDuration,
+        yellowDuration
+      );
+      setCurrentLight(lightState);
+
+      // 2. Calculate Decision
+      const decisionResult = calculateDecision(
+        descentTime,
+        syncTimestamp,
+        cycleDuration,
+        greenDuration,
+        yellowDuration,
+        APP_CONFIG.EARLY_MARGIN,
+        APP_CONFIG.LATE_MARGIN
+      );
+      setDecision(decisionResult);
+
+    }, 100); // 10Hz update
+
+    return () => clearInterval(interval);
+  }, [descentTime, cycleDuration, greenDuration, yellowDuration, syncTimestamp]);
+
+  if (!mounted) return null; // Avoid hydration mismatch
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen relative flex flex-col items-center py-8 px-6 overflow-hidden bg-cyber-black selection:bg-cyber-cyan/30">
+
+      {/* Background Elements */}
+      {/* 1. Subtle Radial Gradient Accent */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyber-cyan/5 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* 2. Refined Grid Pattern (Larger, more subtle) */}
+      <div
+        className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none opacity-40"
+      />
+
+      {/* Settings Button - Top Right Fixed */}
+      <Link href="/settings">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="absolute top-6 right-6 p-2.5 rounded-lg border border-white/10 text-white/50 hover:text-cyber-cyan hover:border-cyber-cyan/50 hover:bg-white/5 transition-all z-50 cursor-pointer"
+          aria-label="Settings"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0-.73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </motion.div>
+      </Link>
+
+      <div className="flex flex-col items-center w-full max-w-lg z-10 pt-4">
+
+        {/* 1. Traffic Light */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative z-10 mb-4"
+        >
+          <TrafficLight state={currentLight} size="lg" />
+        </motion.div>
+
+        {/* Divider for visual separation */}
+        {/* Divider / Cycle Status */}
+        <div className="w-full max-w-[200px] flex items-center justify-center space-x-2 mb-4 opacity-50">
+          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/20" />
+          <div className="w-2 h-2 transform rotate-45 border border-white/20 bg-black" />
+          <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/20" />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* 2. Launch Decision */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="relative z-20 w-full mb-6"
+        >
+          <LaunchDecision decision={decision.decision} />
+        </motion.div>
+
+        {/* 3. Countdown Timer */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="w-full mb-4"
+        >
+          <CountdownTimer targetSeconds={decision.timeUntilGreen} />
+        </motion.div>
+
+        {/* 4. Unified Technical Readout */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="w-full max-w-md"
+        >
+          <GlassPanel className="flex items-center justify-center p-4 divide-x divide-white/10">
+            <div className="flex-1 flex flex-col items-center px-4">
+              <span className="technical-label text-white/40 mb-1">DESCENT</span>
+              <span className="text-3xl font-black text-cyber-cyan tabular-nums">
+                {descentTime.toFixed(1)}<span className="text-xl font-normal text-white/30 ml-1">s</span>
+              </span>
+            </div>
+            <div className="flex-1 flex flex-col items-center px-4">
+              <span className="technical-label text-white/40 mb-1">CYCLE</span>
+              <span className="text-3xl font-black text-cyber-cyan tabular-nums">
+                {cycleDuration}<span className="text-xl font-normal text-white/30 ml-1">s</span>
+              </span>
+            </div>
+          </GlassPanel>
+        </motion.div>
+      </div>
+
+      {/* Footer */}
+      {/* Footer / System Status Bar */}
+      <footer className="mt-auto w-full max-w-lg flex items-center justify-between py-4 px-6 border-t border-white/5 bg-black/20 backdrop-blur-sm rounded-t-xl opacity-60 hover:opacity-100 transition-opacity duration-300">
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 rounded-full bg-cyber-green animate-pulse" />
+          <span className="technical-label text-[10px] tracking-widest text-cyber-green/80">SYSTEM ONLINE</span>
         </div>
-      </main>
-    </div>
+
+        <div className="flex space-x-4">
+          <span className="technical-label text-[10px] text-white/30">GPS <span className="text-white/60">LOCKED</span></span>
+          <span className="technical-label text-[10px] text-white/30">SYNC <span className="text-white/60">OK</span></span>
+        </div>
+
+        <span className="technical-label text-[10px] text-white/20">v2.0 PRO</span>
+      </footer>
+    </main>
   );
 }
