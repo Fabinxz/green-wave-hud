@@ -87,9 +87,9 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
         canvas.height = 240;
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-        // Define ROI (center region where reticle is displayed)
-        const roiWidth = Math.floor(canvas.width * 0.3);
-        const roiHeight = Math.floor(canvas.height * 0.3);
+        // Define ROI (larger center region - 40% of frame for better coverage)
+        const roiWidth = Math.floor(canvas.width * 0.4);
+        const roiHeight = Math.floor(canvas.height * 0.4);
         const roiX = Math.floor((canvas.width - roiWidth) / 2);
         const roiY = Math.floor((canvas.height - roiHeight) / 2);
 
@@ -104,11 +104,12 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
             const g = pixels[i + 1];
             const b = pixels[i + 2];
 
-            // Green detection algorithm
+            // More sensitive green detection algorithm
+            // Lower multiplier (1.2) and lower brightness threshold (60)
             const isGreen =
-                g > r * 1.4 &&
-                g > b * 1.4 &&
-                g > 80;
+                g > r * 1.2 &&
+                g > b * 1.2 &&
+                g > 60;
 
             if (isGreen) greenPixels++;
         }
@@ -130,14 +131,14 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
         const timeSinceLastDetection = Date.now() - lastDetectionTimeRef.current;
         const isInCooldown = timeSinceLastDetection < 40000 && lastDetectionTimeRef.current > 0;
 
-        // Check for green detection (only if not in cooldown)
-        // Lower threshold (25%) and fewer frames (2) for faster detection
-        if (greenPct > 25 && !isInCooldown) {
+        // INSTANT DETECTION: Single frame at 15% threshold
+        // No confirmation needed - prioritize speed over false positive prevention
+        if (greenPct > 15 && !isInCooldown) {
             setConsecutiveGreenFrames((prev) => {
                 const newConsecutive = prev + 1;
 
-                // Require only 2 consecutive frames for faster response
-                if (newConsecutive >= 2) {
+                // Trigger IMMEDIATELY on first detection
+                if (newConsecutive >= 1) {
                     handleGreenDetected();
                     return 0;
                 }
