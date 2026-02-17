@@ -122,38 +122,31 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
             return;
         }
 
-        // Only analyze every 3rd frame for performance
-        setFrameCount((prev) => {
-            const newCount = prev + 1;
+        // Analyze EVERY frame for maximum responsiveness
+        const greenPct = analyzeFrame();
+        setGreenPercentage(greenPct);
 
-            if (newCount % 3 === 0) {
-                const greenPct = analyzeFrame();
-                setGreenPercentage(greenPct);
+        // Check cooldown period (40 seconds since last detection)
+        const timeSinceLastDetection = Date.now() - lastDetectionTimeRef.current;
+        const isInCooldown = timeSinceLastDetection < 40000 && lastDetectionTimeRef.current > 0;
 
-                // Check cooldown period (40 seconds since last detection)
-                const timeSinceLastDetection = Date.now() - lastDetectionTimeRef.current;
-                const isInCooldown = timeSinceLastDetection < 40000 && lastDetectionTimeRef.current > 0;
+        // Check for green detection (only if not in cooldown)
+        // Lower threshold (25%) and fewer frames (2) for faster detection
+        if (greenPct > 25 && !isInCooldown) {
+            setConsecutiveGreenFrames((prev) => {
+                const newConsecutive = prev + 1;
 
-                // Check for green detection (only if not in cooldown)
-                if (greenPct > 40 && !isInCooldown) {
-                    setConsecutiveGreenFrames((prev) => {
-                        const newConsecutive = prev + 1;
-
-                        // Require 3 consecutive frames above threshold
-                        if (newConsecutive >= 3) {
-                            handleGreenDetected();
-                            return 0;
-                        }
-
-                        return newConsecutive;
-                    });
-                } else {
-                    setConsecutiveGreenFrames(0);
+                // Require only 2 consecutive frames for faster response
+                if (newConsecutive >= 2) {
+                    handleGreenDetected();
+                    return 0;
                 }
-            }
 
-            return newCount;
-        });
+                return newConsecutive;
+            });
+        } else {
+            setConsecutiveGreenFrames(0);
+        }
 
         animationFrameRef.current = requestAnimationFrame(runAnalysis);
     };
