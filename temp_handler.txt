@@ -1,0 +1,16 @@
+    // Handle green phase end (light turns OFF)
+    const handleGreenEnded = (greenDuration: number) => {
+        // Update the last detection record with the measured green duration
+        setDetections((prev) => {
+            if (prev.length === 0) return prev;
+            
+            const updatedDetections = [...prev];
+            const lastIndex = updatedDetections.length - 1;
+            updatedDetections[lastIndex] = {
+                ...updatedDetections[lastIndex],
+                greenDuration: greenDuration,
+            };
+            
+            return updatedDetections;
+        });
+    };

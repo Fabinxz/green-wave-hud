@@ -15,12 +15,14 @@ type SyncState =
 interface DetectionRecord {
     timestamp: number;
     cycleNumber: number;
+    greenDuration?: number; // Duration of green phase in ms
 }
 
 interface CameraSyncProps {
     onComplete: (result: {
         syncTimestamp: number;
         measuredCycle: number;
+        measuredGreen: number;
         quality: number;
     }) => void;
     onCancel: () => void;
@@ -32,6 +34,8 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
     const streamRef = useRef<MediaStream | null>(null);
     const animationFrameRef = useRef<number | undefined>(undefined);
     const lastDetectionTimeRef = useRef<number>(0);
+    const greenStartTimeRef = useRef<number>(0); // When current green phase started
+    const consecutiveDarkFramesRef = useRef<number>(0); // Frames without green
 
     const [state, setState] = useState<SyncState>('PERMISSION');
     const [error, setError] = useState<string>('');
@@ -123,21 +127,27 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
             return;
         }
 
-        // Analyze EVERY frame for maximum responsiveness
+        // Analyze EVERY frame for maximum responsiveness 
         const greenPct = analyzeFrame();
         setGreenPercentage(greenPct);
 
-        // Check cooldown period (40 seconds since last detection)
-        const timeSinceLastDetection = Date.now() - lastDetectionTimeRef.current;
+        // Check cooldown period (40 seconds since last cycle detection)
+        const timeSinceLastDetection = performance.now() - lastDetectionTimeRef.current;
         const isInCooldown = timeSinceLastDetection < 40000 && lastDetectionTimeRef.current > 0;
 
-        // INSTANT DETECTION: Single frame at 15% threshold
-        // No confirmation needed - prioritize speed over false positive prevention
+        // Detect GREEN PHASE START (light turns ON)
         if (greenPct > 15 && !isInCooldown) {
+            // Start tracking green phase if not already tracking
+            if (greenStartTimeRef.current === 0) {
+                greenStartTimeRef.current = performance.now();
+            }
+
+            consecutiveDarkFramesRef.current = 0;
+
             setConsecutiveGreenFrames((prev) => {
                 const newConsecutive = prev + 1;
 
-                // Trigger IMMEDIATELY on first detection
+                // Trigger on first detection for instant response
                 if (newConsecutive >= 1) {
                     handleGreenDetected();
                     return 0;
@@ -145,7 +155,20 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
 
                 return newConsecutive;
             });
-        } else {
+        } else if (greenPct <= 15) {
+            // Detect GREEN PHASE END (light turns OFF)
+            if (greenStartTimeRef.current > 0) {
+                consecutiveDarkFramesRef.current++;
+
+                // Require 10 consecutive dark frames to confirm green ended
+                if (consecutiveDarkFramesRef.current >= 10) {
+                    const greenDuration = performance.now() - greenStartTimeRef.current;
+                    handleGreenEnded(greenDuration);
+                    greenStartTimeRef.current = 0;
+                    consecutiveDarkFramesRef.current = 0;
+                }
+            }
+
             setConsecutiveGreenFrames(0);
         }
 
@@ -154,8 +177,8 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
 
     // Handle green light detection
     const handleGreenDetected = () => {
-        // Apply 500ms latency compensation for camera/processing delay
-        const timestamp = Date.now() - 500;
+        // Use performance.now() for precision timing (no compensation hack)
+        const timestamp = performance.now();
 
         // Update cooldown timer IMMEDIATELY
         lastDetectionTimeRef.current = timestamp;
@@ -204,6 +227,23 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
         });
     };
 
+    // Handle green phase end (light turns OFF)
+    const handleGreenEnded = (greenDuration: number) => {
+        // Update the last detection record with the measured green duration
+        setDetections((prev) => {
+            if (prev.length === 0) return prev;
+
+            const updatedDetections = [...prev];
+            const lastIndex = updatedDetections.length - 1;
+            updatedDetections[lastIndex] = {
+                ...updatedDetections[lastIndex],
+                greenDuration: greenDuration,
+            };
+
+            return updatedDetections;
+        });
+    };
+
     // Complete calibration with 3 detections
     const completeCalibration = (detectionRecords: DetectionRecord[]) => {
         const interval1 = detectionRecords[1].timestamp - detectionRecords[0].timestamp;
@@ -211,6 +251,15 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
 
         const avgCycle = (interval1 + interval2) / 2000; // Convert to seconds
         const deviation = Math.abs(interval1 - interval2) / 1000;
+
+        // Calculate average green duration from measurements
+        const greenDurations = detectionRecords
+            .filter(d => d.greenDuration !== undefined)
+            .map(d => d.greenDuration!);
+
+        const avgGreen = greenDurations.length > 0
+            ? greenDurations.reduce((sum, dur) => sum + dur, 0) / greenDurations.length / 1000
+            : 35; // Fallback to default if no measurements
 
         // Calculate quality score
         let quality = 100;
@@ -229,11 +278,12 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
         // Stop camera
         stopCamera();
 
-        // Return results
+        // Return results with measured green duration
         setTimeout(() => {
             onComplete({
                 syncTimestamp: detectionRecords[2].timestamp,
                 measuredCycle: Math.round(avgCycle),
+                measuredGreen: Math.round(avgGreen),
                 quality,
             });
         }, 1500);

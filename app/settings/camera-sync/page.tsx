@@ -11,6 +11,7 @@ export default function CameraSyncPage() {
     const handleComplete = (result: {
         syncTimestamp: number;
         measuredCycle: number;
+        measuredGreen: number;
         quality: number;
     }) => {
         // Save calibration data to store
@@ -19,6 +20,7 @@ export default function CameraSyncPage() {
             method: 'camera-triple',
             quality: result.quality,
             measuredCycle: result.measuredCycle,
+            measuredGreen: result.measuredGreen,
         });
 
         // Navigate back to cockpit

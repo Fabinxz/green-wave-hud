@@ -29,6 +29,7 @@ interface AppActions {
         method: CalibrationMethod;
         quality: number;
         measuredCycle: number;
+        measuredGreen: number;
     }) => void;
     resetToDefaults: () => void;
 }
@@ -69,6 +70,7 @@ export const useStore = create<AppState & AppActions>()(
                 calibrationTimestamp: Date.now(),
                 measuredCycle: data.measuredCycle,
                 cycleDuration: data.measuredCycle, // Auto-update cycle duration
+                greenDuration: data.measuredGreen, // Auto-update green duration from measurement
             }),
 
             resetToDefaults: () => set({
