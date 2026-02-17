@@ -154,7 +154,8 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
 
     // Handle green light detection
     const handleGreenDetected = () => {
-        const timestamp = Date.now();
+        // Apply 500ms latency compensation for camera/processing delay
+        const timestamp = Date.now() - 500;
 
         // Update cooldown timer IMMEDIATELY
         lastDetectionTimeRef.current = timestamp;
