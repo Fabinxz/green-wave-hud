@@ -11,6 +11,8 @@ export default function SettingsPage() {
         descentTime, setDescentTime,
         cycleDuration, setCycleDuration,
         greenDuration, setGreenDuration,
+        yellowDuration, setYellowDuration,
+        calibrationMethod, calibrationQuality, calibrationTimestamp, measuredCycle,
         syncNow, resetToDefaults
     } = useStore();
 
@@ -66,28 +68,73 @@ export default function SettingsPage() {
                     <GlassPanel className="p-8 relative overflow-hidden group border border-white/5">
                         <div className="absolute top-0 left-0 w-1 h-full bg-cyber-cyan" />
 
-                        <p className="text-white/70 mb-8 leading-relaxed text-sm max-w-lg mx-auto text-center">
-                            Engage synchronization protocol at the <strong className="text-cyber-green">EXACT MOMENT</strong> the traffic light signal turns <span className="text-cyber-green">GREEN</span>.
-                        </p>
+                        {calibrationMethod === 'none' ? (
+                            <div className="mb-6 p-4 border border-cyber-amber/30 bg-cyber-amber/5 rounded">
+                                <p className="text-cyber-amber text-xs tracking-wide flex items-center gap-2">
+                                    <span className="text-xl">⚠</span>
+                                    <span>SYSTEM NOT CALIBRATED — Using estimated values</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="mb-6 space-y-2">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-white/50">LAST CALIBRATION</span>
+                                    <span className="text-white/70">
+                                        {calibrationTimestamp ? new Date(calibrationTimestamp).toLocaleString('pt-BR', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-white/50">METHOD</span>
+                                    <span className="text-cyber-cyan font-mono">
+                                        {calibrationMethod === 'manual' ? 'MANUAL' :
+                                            calibrationMethod === 'camera-single' ? 'CAMERA (1x)' :
+                                                calibrationMethod === 'camera-triple' ? 'CAMERA (3x)' : 'UNKNOWN'}
+                                    </span>
+                                </div>
+                                {measuredCycle && (
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-white/50">MEASURED CYCLE</span>
+                                        <span className="text-white/70 font-mono">{measuredCycle.toFixed(1)}s</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-white/50">QUALITY</span>
+                                    <span className={`font-bold ${calibrationQuality >= 80 ? 'text-cyber-green' :
+                                            calibrationQuality >= 50 ? 'text-cyber-amber' : 'text-cyber-red'
+                                        }`}>
+                                        {calibrationQuality >= 80 ? 'HIGH' :
+                                            calibrationQuality >= 50 ? 'MEDIUM' : 'LOW'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleSync}
-                            className={`relative w-full py-8 rounded-sm font-black text-2xl tracking-[0.2em] transition-all overflow-hidden border border-white/10 group
-                        ${synced
-                                    ? 'bg-cyber-green text-black shadow-neon-green border-cyber-green'
-                                    : 'bg-black/40 hover:bg-cyber-green/10 text-white border-white/10 hover:border-cyber-green/50 hover:shadow-[0_0_30px_rgba(0,255,65,0.2)]'
-                                }`}
-                        >
-                            {/* Scanline inside button */}
-                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
-                            <span className="relative z-10">{synced ? 'SYNC CONFIRMED' : 'SYNC ENGINE'}</span>
+                        <Link href="/settings/camera-sync">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="relative w-full py-8 rounded-sm font-black text-2xl tracking-[0.2em] transition-all overflow-hidden border border-white/10 group bg-black/40 hover:bg-cyber-cyan/10 text-white border-white/10 hover:border-cyber-cyan/50 hover:shadow-[0_0_30px_rgba(0,255,235,0.2)]"
+                            >
+                                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
+                                <span className="relative z-10">CALIBRATE WITH CAMERA</span>
+                                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-current opacity-30" />
+                                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-current opacity-30" />
+                            </motion.button>
+                        </Link>
 
-                            {/* Corner accents */}
-                            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-current opacity-30" />
-                            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-current opacity-30" />
-                        </motion.button>
+                        <div className="mt-4 text-center">
+                            <button
+                                onClick={handleSync}
+                                className="text-xs text-white/40 hover:text-cyber-cyan transition-colors tracking-wider"
+                            >
+                                or sync manually now
+                            </button>
+                        </div>
                     </GlassPanel>
                 </section>
 
@@ -113,14 +160,14 @@ export default function SettingsPage() {
                             <div className="relative h-6 flex items-center">
                                 <input
                                     type="range"
-                                    min="5" max="30" step="0.5"
+                                    min="5" max="120" step="1"
                                     value={descentTime}
                                     onChange={(e) => setDescentTime(parseFloat(e.target.value))}
                                     className="text-cyber-cyan z-20"
                                 />
                                 {/* Custom Track Background for Visuals */}
                                 <div className="absolute inset-x-0 h-1 bg-white/10 rounded-full z-10 pointer-events-none" />
-                                <div className="absolute inset-x-0 h-1 bg-cyber-cyan/30 rounded-full z-10 pointer-events-none" style={{ width: `${((descentTime - 5) / 25) * 100}%` }} />
+                                <div className="absolute inset-x-0 h-1 bg-cyber-cyan/30 rounded-full z-10 pointer-events-none" style={{ width: `${((descentTime - 5) / 115) * 100}%` }} />
                             </div>
                         </div>
 
@@ -159,10 +206,31 @@ export default function SettingsPage() {
                                     min="10" max="60" step="5"
                                     value={greenDuration}
                                     onChange={(e) => setGreenDuration(parseFloat(e.target.value))}
-                                    className="text-cyber-cyan z-20" // Unified to Cyan
+                                    className="text-cyber-cyan z-20"
                                 />
                                 <div className="absolute inset-x-0 h-1 bg-white/10 rounded-full z-10 pointer-events-none" />
                                 <div className="absolute inset-x-0 h-1 bg-cyber-cyan/30 rounded-full z-10 pointer-events-none" style={{ width: `${((greenDuration - 10) / 50) * 100}%` }} />
+                            </div>
+                        </div>
+
+                        {/* Yellow Phase Slider */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                                <label className="technical-label text-cyber-cyan">YELLOW PHASE DURATION</label>
+                                <span className="text-4xl font-black text-white tabular-nums tracking-tighter">
+                                    {yellowDuration}<span className="text-lg font-normal text-white/30 ml-1">s</span>
+                                </span>
+                            </div>
+                            <div className="relative h-6 flex items-center">
+                                <input
+                                    type="range"
+                                    min="2" max="8" step="0.5"
+                                    value={yellowDuration}
+                                    onChange={(e) => setYellowDuration(parseFloat(e.target.value))}
+                                    className="text-cyber-cyan z-20"
+                                />
+                                <div className="absolute inset-x-0 h-1 bg-white/10 rounded-full z-10 pointer-events-none" />
+                                <div className="absolute inset-x-0 h-1 bg-cyber-cyan/30 rounded-full z-10 pointer-events-none" style={{ width: `${((yellowDuration - 2) / 6) * 100}%` }} />
                             </div>
                         </div>
 

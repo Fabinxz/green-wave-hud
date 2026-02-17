@@ -17,7 +17,9 @@ export default function Home() {
     cycleDuration,
     greenDuration,
     yellowDuration,
-    syncTimestamp
+    syncTimestamp,
+    calibrationMethod,
+    calibrationQuality
   } = useStore();
 
   const [currentLight, setCurrentLight] = useState<LightState>('RED');
@@ -153,7 +155,6 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* Footer */}
       {/* Footer / System Status Bar */}
       <footer className="mt-auto w-full max-w-lg flex items-center justify-between py-4 px-6 border-t border-white/5 bg-black/20 backdrop-blur-sm rounded-t-xl opacity-60 hover:opacity-100 transition-opacity duration-300">
         <div className="flex items-center space-x-2">
@@ -161,10 +162,23 @@ export default function Home() {
           <span className="technical-label text-[10px] tracking-widest text-cyber-green/80">SYSTEM ONLINE</span>
         </div>
 
-        <div className="flex space-x-4">
-          <span className="technical-label text-[10px] text-white/30">GPS <span className="text-white/60">LOCKED</span></span>
-          <span className="technical-label text-[10px] text-white/30">SYNC <span className="text-white/60">OK</span></span>
-        </div>
+        {/* Calibration Status Indicator */}
+        <Link href="/settings/camera-sync">
+          <div className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer">
+            <div className={`w-2 h-2 rounded-full ${calibrationMethod === 'none' ? 'bg-cyber-red' :
+                calibrationMethod === 'camera-triple' ? 'bg-cyber-green' :
+                  'bg-cyber-amber'
+              }`} />
+            <span className={`technical-label text-[10px] tracking-wider ${calibrationMethod === 'none' ? 'text-cyber-red/80' :
+                calibrationMethod === 'camera-triple' ? 'text-cyber-green/80' :
+                  'text-cyber-amber/80'
+              }`}>
+              {calibrationMethod === 'none' ? 'NO SYNC' :
+                calibrationMethod === 'camera-triple' ? 'CALIBRATED' :
+                  'BASIC SYNC'}
+            </span>
+          </div>
+        </Link>
 
         <span className="technical-label text-[10px] text-white/20">v2.0 PRO</span>
       </footer>
