@@ -31,6 +31,7 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const animationFrameRef = useRef<number | undefined>(undefined);
+    const lastDetectionTimeRef = useRef<number>(0);
 
     const [state, setState] = useState<SyncState>('PERMISSION');
     const [error, setError] = useState<string>('');
@@ -129,8 +130,12 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
                 const greenPct = analyzeFrame();
                 setGreenPercentage(greenPct);
 
-                // Check for green detection
-                if (greenPct > 40) {
+                // Check cooldown period (40 seconds since last detection)
+                const timeSinceLastDetection = Date.now() - lastDetectionTimeRef.current;
+                const isInCooldown = timeSinceLastDetection < 40000 && lastDetectionTimeRef.current > 0;
+
+                // Check for green detection (only if not in cooldown)
+                if (greenPct > 40 && !isInCooldown) {
                     setConsecutiveGreenFrames((prev) => {
                         const newConsecutive = prev + 1;
 
