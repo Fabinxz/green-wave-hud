@@ -162,6 +162,9 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
     const handleGreenDetected = () => {
         const timestamp = Date.now();
 
+        // Update cooldown timer IMMEDIATELY
+        lastDetectionTimeRef.current = timestamp;
+
         setDetections((prev) => {
             const newDetections = [...prev, { timestamp, cycleNumber: prev.length + 1 }];
 
