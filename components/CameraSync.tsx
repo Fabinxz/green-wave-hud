@@ -168,11 +168,13 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
                 triggerFlash();
                 triggerVibration();
             } else if (newDetections.length === 2) {
-                // Validate interval
+                // Validate interval (relaxed limits: 5s - 10min)
                 const interval = timestamp - newDetections[0].timestamp;
-                if (interval < 10000 || interval > 300000) {
+                const intervalSeconds = Math.round(interval / 1000);
+
+                if (interval < 5000 || interval > 600000) {
                     setState('ERROR');
-                    setError('Invalid timing detected. Please restart calibration.');
+                    setError(`Invalid timing: ${intervalSeconds}s between detections (expected 5-600s). Too ${interval < 5000 ? 'fast' : 'slow'}. Please restart.`);
                     return prev;
                 }
 
@@ -181,11 +183,13 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
                 triggerFlash();
                 triggerVibration();
             } else if (newDetections.length >= 3) {
-                // Validate interval
+                // Validate interval (relaxed limits: 5s - 10min)
                 const interval = timestamp - newDetections[1].timestamp;
-                if (interval < 10000 || interval > 300000) {
+                const intervalSeconds = Math.round(interval / 1000);
+
+                if (interval < 5000 || interval > 600000) {
                     setState('ERROR');
-                    setError('Invalid timing detected. Please restart calibration.');
+                    setError(`Invalid timing: ${intervalSeconds}s between detections (expected 5-600s). Too ${interval < 5000 ? 'fast' : 'slow'}. Please restart.`);
                     return prev;
                 }
 
