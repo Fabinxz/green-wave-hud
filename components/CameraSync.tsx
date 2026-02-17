@@ -177,9 +177,9 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
                 const interval = timestamp - newDetections[0].timestamp;
                 const intervalSeconds = Math.round(interval / 1000);
 
-                if (interval < 5000 || interval > 600000) {
+                if (interval < 40000 || interval > 600000) {
                     setState('ERROR');
-                    setError(`Invalid timing: ${intervalSeconds}s between detections (expected 5-600s). Too ${interval < 5000 ? 'fast' : 'slow'}. Please restart.`);
+                    setError(`Intervalo: ${intervalSeconds}s (esperado 40-600s). ${interval < 40000 ? 'Muito rápido - mesmo ciclo?' : 'Muito lento'}`);
                     return prev;
                 }
 
@@ -192,9 +192,9 @@ export default function CameraSync({ onComplete, onCancel }: CameraSyncProps) {
                 const interval = timestamp - newDetections[1].timestamp;
                 const intervalSeconds = Math.round(interval / 1000);
 
-                if (interval < 5000 || interval > 600000) {
+                if (interval < 40000 || interval > 600000) {
                     setState('ERROR');
-                    setError(`Invalid timing: ${intervalSeconds}s between detections (expected 5-600s). Too ${interval < 5000 ? 'fast' : 'slow'}. Please restart.`);
+                    setError(`Intervalo: ${intervalSeconds}s (esperado 40-600s). ${interval < 40000 ? 'Muito rápido - mesmo ciclo?' : 'Muito lento'}`);
                     return prev;
                 }
 
